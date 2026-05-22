@@ -64,7 +64,7 @@ are sections of the line bundle $O_{\mathbb{P}^2}(k_\phi)$. For degree the quint
  
 The cymyc library provides a JAX framework for computing the Ricci-flat metric for CY manifolds with neural networks. The cymyc point sampling method was used to generate points on the quintic threefold, and the Ricci-flat metric was approximated over 50 epochs, achieving a Monge-Ampère loss of 0.05. The model was trained on 100,000 points. Future work will implement Fourier features for improved metric accuracy, but the standard cymyc method was used for speed in developing the code to compute eigenvalue crossings. 
  
-### 4.2 Assembly of the Laplacian
+### 4.2 Laplacian
  
 For each sampled point $p_i$ on the quintic with weight $w_i$, pullback $J_i$, and metric $g_i$:
  
@@ -76,19 +76,20 @@ For each sampled point $p_i$ on the quintic with weight $w_i$, pullback $J_i$, a
  ```math
  L = \sum_i (\kappa \, w_i / N) \, L^{(i)}, S = \sum_i (\kappa \, w_i / N) \, S^{(i)}.
 ```
-### 4.3 Eigenvalue Extraction
+### 4.3 Calculating the Eigenvalues
  
 Both $L$ and $S$ are theoretically Hermitian but must be corrected because of numerical error. Hermiticity is ensured using $L \leftarrow \frac{1}{2}(L + L^\dagger)$, and the same method for $S$. The generalized eigenvalue problem $L \mathbf{c} = \lambda S \mathbf{c}$ is then solved with `scipy.linalg.eigvalsh`.
 
 ### 4.4 Period Computation and Attractor Search
  
-To identify attractor points, we compute the period vector $\Pi(\psi)$ by:
+To identify attractor points, the period vector was computed $\Pi(\psi)$ by:
  
-1. Evaluating the Frobenius power series $\omega_k(z)$ at a small seed point $z_0 = 10^{-6}$ near the MUM point, using the explicit formula involving ratios of gamma functions and their logarithmic derivatives (digamma and polygamma functions).
-2. Setting initial conditions for the Picard-Fuchs ODE using $\theta$-derivatives computed via finite differences.
-3. Numerically integrating the ODE from $z_0$ to $z_{\mathrm{target}} = \psi^{-5}$ using an 8th-order Runge-Kutta method (`DOP853`) with stringent tolerances ($\mathrm{rtol} = 10^{-12}$).
-4. Transforming from the Frobenius basis to the symplectic basis via the matrix $M$.
-The attractor search then scans over integer charge vectors $q$ with components in $\{-2, \ldots, 2\}$ and, for each $q$, minimizes $|Z(\psi, q)|^2 / e^{-K(\psi)}$ over $\psi$ using the Nelder-Mead algorithm, seeded at the approximate crossing location.
+1. Evaluating the Frobenius power series $\omega_k(z)$ and using the formula the digamma and polygamma functions (```scipy.special.digamma/polgamma```).
+2. Solving for the initial initial conditions for the Picard-Fuchs ODE using finite difference methods and numerically integrating using Runge-Kutta with the standard ```solve_ivp``` function. 
+3. Lastly, transforming from the Frobenius basis to the symplectic basis using the matrix $M$.
+
+The algorithm then searches for $\psi$ values that minimize the 
+
  
 ### 4.5 Hyperparameter Choices
  
